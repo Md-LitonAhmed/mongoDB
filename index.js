@@ -1,7 +1,11 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
-const uri =
-  "mongodb+srv://SayedDB:c9AdqrSuj3vSRnDi@cluster0.hvrydg3.mongodb.net/?retryWrites=true&w=majority";
+const express = require("express");
+const bodyParser = require("body-parser");
 
+// const uri ="mongodb+srv://SayedDB:c9AdqrSuj3vSRnDi@cluster0.hvrydg3.mongodb.net/?retryWrites=true&w=majority";
+
+const uri =
+  "mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+1";
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
@@ -12,6 +16,10 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 async function run() {
   try {
@@ -99,40 +107,40 @@ function FindDataByProjection() {
 }
 // FindDataByProjection();
 
-// function FindDataByQuery() {
-//   const myCollection = client.db("School").collection("Students");
-//   var query = { city: "Dhaka", class: "12" };
-//   myCollection
-//     .find(query)
-//     .toArray()
-//     .then((result) => {
-//       console.log(result);
-//     });
-// }
+function FindDataByQuery() {
+  const myCollection = client.db("School").collection("Students");
+  var query = { city: "Dhaka", class: "12" };
+  myCollection
+    .find(query)
+    .toArray()
+    .then((result) => {
+      console.log(result);
+    });
+}
 // FindDataByQuery();
 
-// function FindDataByLimit() {
-//   const myCollection = client.db("School").collection("Students");
-//   myCollection
-//     .find()
-//     .limit(3)
-//     .toArray()
-//     .then((result) => {
-//       console.log(result);
-//     });
-// }
+function FindDataByLimit() {
+  const myCollection = client.db("School").collection("Students");
+  myCollection
+    .find()
+    .limit(3)
+    .toArray()
+    .then((result) => {
+      console.log(result);
+    });
+}
 // FindDataByLimit();
 
-// function FindDataBySort() {
-//   const myCollection = client.db("School").collection("Students");
-//   myCollection
-//     .find()
-//     .sort({ Roll: 1 })
-//     .toArray()
-//     .then((result) => {
-//       console.log(result);
-//     });
-// }
+function FindDataBySort() {
+  const myCollection = client.db("School").collection("Students");
+  myCollection
+    .find()
+    .sort({ Roll: 1 })
+    .toArray()
+    .then((result) => {
+      console.log(result);
+    });
+}
 // FindDataBySort();
 
 function UpdateData() {
@@ -143,4 +151,44 @@ function UpdateData() {
     console.log(result);
   });
 }
-UpdateData();
+// UpdateData();
+
+function CreateCollection() {
+  const myDB = client.db("School");
+  myDB.createCollection("Teacher").then((result) => {
+    console.log("Teacher Collection is Created ");
+  });
+}
+// CreateCollection();
+
+async function readWrite() {
+  await client.connect();
+  const myCollection = client.db("School").collection("Teachers");
+
+  app.get("/readData", (req, res) => {
+    myCollection
+      .find()
+      .toArray()
+      .then((result) => {
+        console.log(result);
+        res.send(result);
+      });
+  });
+
+  app.post("/addData", (req, res) => {
+    const info = req.body;
+    console.log(info);
+    myCollection.insertOne(info).then((result) => {
+      console.log("Informations Of Teacher are added");
+      res.send("Data inserted Successfuly");
+    });
+  });
+}
+readWrite();
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+  // res.send("Hello I am working");
+});
+
+app.listen(3000);
