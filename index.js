@@ -1,7 +1,8 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const bodyParser = require("body-parser");
-
+const ObjectId = require("mongodb").ObjectId;
+//MongoDB Atlas connections string
 // const uri ="mongodb+srv://SayedDB:c9AdqrSuj3vSRnDi@cluster0.hvrydg3.mongodb.net/?retryWrites=true&w=majority";
 
 const uri =
@@ -180,8 +181,32 @@ async function readWrite() {
     console.log(info);
     myCollection.insertOne(info).then((result) => {
       console.log("Informations Of Teacher are added");
-      res.send("Data inserted Successfuly");
+      res.redirect("/");
     });
+  });
+
+  app.get("/data/:id", (req, res) => {
+    myCollection
+      .find({ _id: ObjectId(req.params.id) })
+      .toArray((err, documents) => {
+        res.send(documents[0]);
+      });
+  });
+  // app.delete("/delete/:id", (req, res) => {
+  // console.log(req.params.id);
+  //   myCollection.deleteOne({ _id: ObjectId(req.params.id) }).then((result) => {
+  //     console.log(result);
+  // });
+  //   myCollection.deleteOne({ _id: ObjectId(req.params.id) }).then((result) => {
+  //     console.log(result);
+  //   });
+  // });
+
+  app.delete("/delete/:id", (req, res) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = myCollection.deleteOne(query);
+    res.send(result.deletedCount > 0);
   });
 }
 readWrite();

@@ -13,5 +13,54 @@
       <input type="text" placeholder="Subject" name="subject" />
       <button type="submit">add Data</button>
     </form>
+    <div id="product"></div>
+    <div id="update"></div>
+
+    <script>
+      function loadData() {
+        fetch("/readData")
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+            const container = document.getElementById("product");
+            data.forEach((element) => {
+              const h3 = document.createElement("h3");
+              const p = document.createElement("p");
+
+              h3.innerHTML = `Name: ${element.name}`;
+              p.innerHTML = `Age: ${element.age} <br> Subject: ${element.subject}
+              <button onclick="dataUpdate('${element._id}')"> Update </button>
+              <button onclick="deleteData( event,'${element._id}')"> Delete </button>`;
+
+              container.appendChild(h3);
+              container.appendChild(p);
+            });
+          });
+      }
+
+      function dataUpdate(id) {
+        console.log(id);
+        fetch(`data/${id}`)
+          .then((res) => res.json())
+          .then((data) => {
+            const update = document.getElementById("update");
+            update.innerHTML = `<h3> Update:${data._id}<h3>`;
+          });
+      }
+      function deleteData(event, id) {
+        console.log(event.target);
+        fetch(`delete/${id}`, {
+          method: "DELETE",
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            if (result) {
+              event.target.parentNode.style.display = none;
+            }
+          });
+        console.log(id);
+      }
+      loadData();
+    </script>
   </body>
 </html>
